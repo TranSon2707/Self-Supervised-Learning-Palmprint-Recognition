@@ -2,7 +2,12 @@ dataset/archive/*
 dataset/processed_images/*
 
 venv/
+
+# Python cache
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
 
 # Ignore environment variables (sensitive data)
 .env
