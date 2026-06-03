@@ -1,0 +1,14 @@
+dataset/archive/*
+dataset/processed_images/*
+
+venv/
+__pycache__/
+
+# Ignore environment variables (sensitive data)
+.env
+.env.local
+
+# Ignore build outputs and logs
+dist/
+build/
+*.log

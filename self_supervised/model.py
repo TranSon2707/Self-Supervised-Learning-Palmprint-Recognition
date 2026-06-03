@@ -7,7 +7,8 @@ class PalmprintEncoder(nn.Module):
         super().__init__()
 
         # Use a pre-trained ResNet-18 (remove classification head)
-        resnet = models.resnet18(pretrained=True)
+        # resnet = models.resnet18(pretrained=True) # pretrained = True -> 
+        resnet = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1) # -> 
         self.encoder = nn.Sequential(*list(resnet.children())[:-1])  # Remove last layer (avgpool + fc)
 
         # Projection Head (MLP)

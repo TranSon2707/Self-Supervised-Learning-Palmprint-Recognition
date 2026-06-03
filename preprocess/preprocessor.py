@@ -1,6 +1,11 @@
 import cv2
 import numpy as np
 
+"""
+Contains functions for preprocessing palmprint images (contrast enhancement, noise reduction, segmentation, ROI extraction, resizing, and normalization)
+-> main function `preprocess_image` used in `batch_preprocess.py` to preprocess all images in the dataset and save them as .npy files for training.
+"""
+
 CLAHE_CLIP_LIMIT = 2.0  # Clip limit for CLAHE contrast enhancement.
 CLAHE_TITLE_GRID_SIZE = (5, 5)  # Tile grid size for CLAHE.
 ROI_SIZE = (276, 276)  # Size of the Region of Interest (ROI) to extract (width, height).

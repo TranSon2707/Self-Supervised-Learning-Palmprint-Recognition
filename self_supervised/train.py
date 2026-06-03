@@ -11,7 +11,7 @@ from model import PalmprintEncoder
 
 PREPROCESSED_DATA_DIR = '../dataset/preprocessed_images'
 BATCH_SIZE = 64
-LEARNING_RATE = 1e-4
+LEARNING_RATE = 1e-4    # for Adam optimizer
 EPOCHS = 100
 EMBEDDING_DIM = 138
 TEMPERATURE = 0.07
@@ -21,7 +21,7 @@ IMAGE_SIZE = 138
 class PalmprintDataset(Dataset):
     def __init__(self, data_dir, transform=None):
         self.image_paths = [os.path.join(data_dir, f) for f in os.listdir(data_dir) if f.endswith('.npy')]
-        self.transform = transform
+        self.transform = transform  # Augmentation function
 
     def __len__(self):
         return len(self.image_paths)

@@ -32,7 +32,8 @@ PREPROCESSED_DATA_DIR = 'dataset/preprocessed_images'  # Path to preprocessed im
 
 # Initialize preprocessor (adjust parameters if needed)
 encoder = PalmprintEncoder().encoder
-encoder.load_state_dict(torch.load(ENCODER_PATH))
+# encoder.load_state_dict(torch.load(ENCODER_PATH))
+encoder.load_state_dict(torch.load(ENCODER_PATH, map_location=torch.device('cpu'), weights_only=True))
 encoder.eval()  # Set to evaluation mode
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # use GPU if available
 encoder.to(device)
