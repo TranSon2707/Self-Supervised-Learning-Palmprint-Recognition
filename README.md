@@ -99,6 +99,12 @@ This contrastive objective forces the model to learn features that are invariant
 
 **Loss Function:** The training process utilizes the **NT-Xent (Normalized Temperature-scaled Cross Entropy) Loss** function to achieve this objective. This loss function, with a **temperature parameter of 0.07**, encourages similar embeddings for positive pairs and dissimilar embeddings for negative pairs in a normalized embedding space. By minimizing this loss, the model learns to extract robust and discriminative features from the unlabeled palmprint images.
 
+**Data Augmentations:**
+- `RandomResizedCrop`
+- `RandomRotation` (±15°)
+- `ColorJitter` (brightness & contrast, p=0.8)
+- `GaussianBlur` (p=0.5)
+
 ## Model Architecture
 
 <table>
@@ -158,28 +164,147 @@ The UI allows users to easily test the palmprint recognition system by uploading
 
 _The demo showcases the palmprint recognition system's ability to identify palmprints from the same individual.  By using one of the original palmprint images (that was excluded from the training dataset), the model successfully located the other corresponding palmprint images in the database (from the same person) with similarity scores consistently around 90%._
 
+### 🔍 Recognition Tab
+- Upload a palmprint image (JPG, JPEG, PNG, TIFF)
+- System preprocesses the image, extracts a 256-d embedding, and compares it against the full 12,000-image database via cosine similarity
+- Displays the **top 5 matches** with similarity scores and match/no-match verdict at the 0.8 threshold
+
+### 📊 Benchmark Tab
+- Automatically builds **genuine pairs** (same identity, different images) and **impostor pairs** (different identities) from the embedding database
+- Computes FAR, FRR, Valid Accuracy, and EER across the full dataset
+- Provides an **interactive threshold slider** — metric cards update in real time without rerunning the expensive scoring step
+- Renders a **FAR / FRR vs. Threshold curve** with annotated EER and operating-point markers
+- Renders a **Score Distribution histogram** showing the separation between genuine and impostor similarity scores
+
+![palmprint-demo.gif](output/palmprint-demo.gif)
+
+---
+
+## Benchmark Metrics
+
+The benchmark tab evaluates the system using four standard biometric performance metrics.
+
+### Metric Definitions
+
+| Metric | Formula | What it measures |
+|--------|---------|-----------------|
+| **Valid Accuracy** | (TA / total genuine) × 100 | % of genuine attempts the system correctly accepts |
+| **FAR** (False Acceptance Rate) | (FA / total impostor) × 100 | % of impostor attempts the system incorrectly accepts |
+| **FRR** (False Rejection Rate) | (FR / total genuine) × 100 | % of genuine attempts the system incorrectly rejects |
+| **EER** (Equal Error Rate) | (FAR + FRR) / 2 at crossover | Threshold-independent summary — lower is better |
+
+*TA = True Acceptances, FA = False Acceptances, FR = False Rejections*
+
+### How to Interpret Results
+
+**FAR / FRR trade-off** — raising the threshold makes the system stricter: FAR falls (fewer impostors accepted) but FRR rises (more genuine users rejected). Lowering the threshold has the opposite effect. The EER is the single-number summary of where these two curves cross.
+
+**Score Distribution** — a well-trained model produces a bimodal histogram: genuine pairs cluster near **1.0** (high similarity) and impostor pairs cluster near **0.0** (low similarity). A large overlap indicates the model is struggling to discriminate identities.
+
+**Operating point** — the default threshold of **0.8** is a conservative choice (prioritising low FAR). For scenarios that penalise false rejections more, lower the threshold towards the EER point.
+
+---
+
 ## How to Run the Code
 
-To run this project, navigate to the project directory, follow these steps:
+### Prerequisites
 
-1.  **Install Libraries:** 
-    ```bash
-    pip install -r requirements.txt
-    ```
-2. **Run the Streamlit UI:**
+Ensure all steps below have been completed before launching the app.
 
-    ```bash
-    streamlit run app.py
-    ```
+```
+project/
+├── dataset/
+│   └── preprocessed_images/     ← produced by step 2
+├── output/
+│   ├── model/
+│   │   └── palmprint_encoder.pth  ← produced by step 3
+│   └── embeddings/
+│       ├── all_embeddings.npy     ← produced by step 4
+│       └── image_names.npy        ← produced by step 4
+```
 
-3. **Access the UI:**  Open your web browser and go to the address provided by Streamlit (usually `http://localhost:8501`).
+### Step-by-step
+
+**1. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**2. Preprocess images**
+```bash
+python preprocess/batch_preprocess.py
+```
+Reads `dataset/archive/session{1,2}/` and writes `.npy` files to `dataset/preprocessed_images/`.
+
+**3. Train the encoder** *(skip if `palmprint_encoder.pth` already exists)*
+```bash
+cd self_supervised
+python train.py
+```
+Saves `output/model/palmprint_encoder.pth` after 100 epochs.
+
+**4. Extract and save embeddings**
+```bash
+python client/extract_features.py
+```
+Writes `output/embeddings/all_embeddings.npy` and `image_names.npy`.
+The benchmark tab **requires these files** — run this step before opening the app.
+
+**5. Launch the app**
+```bash
+streamlit run app.py
+```
+Open `http://localhost:8501` in your browser.
+
+---
+
+## Demo Walkthrough — Benchmark Tab
+
+Once the app is running, navigate to the **📊 Benchmark** tab. The first load computes genuine / impostor pair scores over the full embedding database; subsequent threshold changes use the cached scores and respond instantly.
+
+### What to explore
+
+**Step 1 — Read the metric cards at the default threshold (0.8)**
+
+At a high threshold the system is strict. Expect:
+- **Low FAR** — very few impostors are mistakenly accepted
+- **Higher FRR** — some genuine users are rejected because their score falls below 0.8
+- **Valid Accuracy** — reflects how reliably the model recognises enrolled users
+
+**Step 2 — Drag the threshold slider downward (towards 0.5)**
+
+Watch how the metric cards change in real time:
+- FAR rises as the system becomes more permissive
+- FRR falls as more genuine pairs now exceed the threshold
+- The orange operating-point marker on the FAR/FRR curve tracks your slider
+
+**Step 3 — Locate the EER**
+
+The grey dashed line on the curve marks the **EER threshold** — the point where FAR ≈ FRR. Moving the slider to this value minimises the total error rate and gives a balanced operating point. The purple EER card always shows this threshold-independent value regardless of where the slider sits.
+
+**Step 4 — Inspect the Score Distribution**
+
+The histogram separates the system's output into two groups:
+- 🟢 **Green (genuine pairs)** — pairs from the same person; scores should be high
+- 🔴 **Red (impostor pairs)** — pairs from different people; scores should be low
+
+A large gap between the two peaks (small overlap) indicates strong identity discrimination. The orange vertical line shows where your selected threshold cuts across the distribution.
+
+**Step 5 — Check the Evaluation Set Summary**
+
+The counts panel shows the raw TA / FA / FR / TR numbers, making it straightforward to verify the metric formulas by hand.
+
+---
 
 ## Key Libraries Used
 
-*   **PyTorch:** Deep learning framework for model building and training.
-*   **torchvision:** PyTorch's library for computer vision tasks, including pre-trained models and image transformations.
-*   **OpenCV (cv2):**  Image processing library for preprocessing steps.
-*   **NumPy:** Numerical computing library for array operations and data handling.
-*   **Streamlit:** Python framework for building interactive web UIs.
-*   **scikit-learn (sklearn):** Machine learning library, used for cosine similarity calculation.
-*   **PIL (Pillow):** Python Imaging Library for image handling (used via Streamlit).
+| Library | Role |
+|---------|------|
+| **PyTorch** | Model building and training |
+| **torchvision** | Pre-trained ResNet-18, image transforms |
+| **OpenCV (cv2)** | Preprocessing pipeline |
+| **NumPy** | Array operations, vectorised pair scoring |
+| **scikit-learn** | Cosine similarity (recognition tab) |
+| **Streamlit** | Web UI (both tabs) |
+| **Matplotlib** | FAR/FRR curve and score distribution plots |
+| **PIL (Pillow)** | Image handling |
