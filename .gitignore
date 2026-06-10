@@ -1,19 +1,46 @@
+# Ignore dataset files and processed images
 dataset/archive/*
 dataset/processed_images/*
-
-venv/
-
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
 
 # Ignore environment variables (sensitive data)
 .env
 .env.local
 
-# Ignore build outputs and logs
-dist/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Distribution / packaging
 build/
+dist/
+*.egg-info/
+*.egg
 *.log
+
+# IDE files
+.idea/
+.vscode/
+
+# Test and coverage reports
+htmlcov/
+.coverage
+.tox/
+.pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Misc
+*.log
+.DS_Store
