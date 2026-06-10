@@ -1,16 +1,18 @@
 import os
 import torch
-import numpy as np
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import numpy as np
 from self_supervised.model import PalmprintEncoder
 
-PREPROCESSED_DATA_DIR = '../dataset/preprocessed_images'
+PREPROCESSED_DATA_DIR = 'dataset/preprocessed_images'
 
-ENCODER_PATH = '../output/model/palmprint_encoder.pth'
+ENCODER_PATH = 'output/model/palmprint_encoder.pth'
 encoder = PalmprintEncoder().encoder
-encoder.load_state_dict(torch.load(ENCODER_PATH))
-encoder.eval()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+encoder.load_state_dict(torch.load(ENCODER_PATH, weights_only=False, map_location=device))
+encoder.eval()
 encoder.to(device)
 
 
@@ -40,7 +42,11 @@ for image_file in image_files:
 
 all_embeddings = np.array(all_embeddings)
 
-np.save('../output/embeddings/all_embeddings.npy', all_embeddings)
-np.save('../output/embeddings/image_names.npy', image_names)
+# ensure output embeddings directory exists and use a project-relative path
+embeddings_dir = os.path.join('output', 'embeddings')
+os.makedirs(embeddings_dir, exist_ok=True)
 
-print(f"Feature extraction complete. Embeddings saved to all_embeddings.npy, image names saved to image_names.npy")
+np.save(os.path.join(embeddings_dir, 'all_embeddings.npy'), all_embeddings)
+np.save(os.path.join(embeddings_dir, 'image_names.npy'), image_names)
+
+print(f"Feature extraction complete. Embeddings saved to {os.path.join(embeddings_dir, 'all_embeddings.npy')}, image names saved to {os.path.join(embeddings_dir, 'image_names.npy')}")
