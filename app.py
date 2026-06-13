@@ -170,7 +170,7 @@ with tab_recognition:
                     query_emb         = embed_image(preprocessed, encoder, device)
                     similarity_scores = calculate_similarity(query_emb, all_embeddings)
                     best_matches, match_found = find_best_matches(
-                        similarity_scores, img_names, threshold=0.8
+                        similarity_scores, img_names, threshold=0.61
                     )
 
                     st.subheader("Matching Results")

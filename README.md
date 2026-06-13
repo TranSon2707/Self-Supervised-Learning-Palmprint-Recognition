@@ -29,60 +29,6 @@ Before feature extraction, palmprint images undergo a preprocessing pipeline to 
 6.  **ROI Resizing:** The extracted ROI is resized to a standardized `(138x138)` pixel size to ensure consistent input dimensions for the feature extraction model.
 7.  **ROI Normalization:** Finally, the pixel values of the resized ROI are normalized to the range of `[0, 1]` by dividing by `255.0`. This step helps in stabilizing and accelerating the training of the deep learning model.
 
-### **Example Preprocessing Stages:**
-
-Below are example images illustrating the key stages of the preprocessing pipeline applied to a sample palmprint image from the dataset, displayed in a horizontal flow:
-
-<table>
-  <tr>
-    <td align="center">
-      (1) Original Image:<br>
-      <img src="output/original_image.png" width="150"><br>
-    </td>
-    <td align="center"> → </td>  <!-- Arrow -->
-    <td align="center">
-      (2) Grayscale Conversion:<br>
-      <img src="output/Grayscale%20Image_screenshot_27.01.2025.png"><br>
-    </td>
-    <td align="center"> → </td>  <!-- Arrow -->
-    <td align="center">
-      (3) Contrast Enhanced (CLAHE):<br>
-      <img src="output/CLAHE%20Image_screenshot_27.01.2025.png"><br>
-    </td>
-    <td align="center"> → </td>  <!-- Arrow -->
-    <td align="center">
-      (4) Noise Reduction: <br>
-      <img src="output/Blur%20Image_screenshot_27.01.2025.png"><br>
-    </td>
-    <td align="center"> → </td>  <!-- Arrow -->
-    <td align="center">
-      (5) Contour Extraction: <br>
-      <img src="output/Contours_screenshot_27.01.2025.png"><br>
-    </td>
-    <td align="center"> → </td>  <!-- Arrow -->
-    <td align="center">
-      (6) (ROI) Extraction: <br>
-      <img src="output/ROI_screenshot_27.01.2025.png"><br>
-    </td>
-    <td align="center"> → </td>  <!-- Arrow -->
-    <td align="center">
-      (7) ROI Resizing: <br>
-      <img src="output/Resized%20ROI_screenshot_27.01.2025.png"><br>
-    </td>
-    <td align="center"> → </td>  <!-- Arrow -->
-    <td align="center">
-      (8) ROI Normalization: <br>
-      <img src="output/Normalized%20ROI_screenshot_27.01.2025.png"><br>
-    </td>
-    <td align="center"> → </td>  <!-- Arrow -->
-    <td align="center">
-      (9) Final Preprocess Result: <br>
-      <img src="output/Final%20Preprocess%20Image_screenshot_27.01.2025.png"><br>
-    </td>
-  </tr>
-</table>
-
-
 ---
 ## Self-Supervised Learning Method Used
 
@@ -160,10 +106,6 @@ A simple and interactive web user interface was developed using **Streamlit** to
 
 The UI allows users to easily test the palmprint recognition system by uploading their own palmprint images and observing the matching results in real-time.
 
-![palmprint-demo.gif](output/palmprint-demo.gif)
-
-_The demo showcases the palmprint recognition system's ability to identify palmprints from the same individual.  By using one of the original palmprint images (that was excluded from the training dataset), the model successfully located the other corresponding palmprint images in the database (from the same person) with similarity scores consistently around 90%._
-
 ### 🔍 Recognition Tab
 - Upload a palmprint image (JPG, JPEG, PNG, TIFF)
 - System preprocesses the image, extracts a 256-d embedding, and compares it against the full 12,000-image database via cosine similarity
@@ -175,8 +117,6 @@ _The demo showcases the palmprint recognition system's ability to identify palmp
 - Provides an **interactive threshold slider** — metric cards update in real time without rerunning the expensive scoring step
 - Renders a **FAR / FRR vs. Threshold curve** with annotated EER and operating-point markers
 - Renders a **Score Distribution histogram** showing the separation between genuine and impostor similarity scores
-
-![palmprint-demo.gif](output/palmprint-demo.gif)
 
 ---
 
@@ -208,6 +148,8 @@ The benchmark tab evaluates the system using four standard biometric performance
 ## How to Run the Code
 
 ### Prerequisites
+
+Download the dataset and put the two folder `session1` and `session2` into directory `dataset\archive\`
 
 Ensure all steps below have been completed before launching the app.
 
